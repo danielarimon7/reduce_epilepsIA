@@ -2,7 +2,7 @@ import pika
 import json
 
 # IP de la VM donde está RabbitMQ
-rabbitmq_ip = '10.128.0.5'
+rabbitmq_ip = '10.128.0.16'
 
 # Conexión al RabbitMQ usando la IP directamente
 connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_ip))
