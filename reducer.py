@@ -1,7 +1,8 @@
 from collections import defaultdict
 from datetime import datetime
+from typing import List, Dict
 
-def reducir_respuestas(datos: list[dict]) -> list[dict]:
+def reducir_respuestas(datos: List[Dict]) -> List[Dict]:
     conteo_respuestas = defaultdict(lambda: defaultdict(int))
 
     for d in datos:
