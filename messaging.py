@@ -21,7 +21,7 @@ _publish_channel = _publish_conn.channel()
 def declare_queue(queue_name: str):
     _publish_channel.queue_declare(queue=queue_name, durable=True)
 
-def publish(message: dict, queue: str = 'ia_requests') -> None:
+def publish(message: dict, queue: str = 'ia_responses') -> None:
     declare_queue(queue)
     _publish_channel.basic_publish(
         exchange='',

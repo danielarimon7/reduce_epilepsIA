@@ -1,43 +1,31 @@
-import pika
 import json
+import pika
 from reducer import reducir_respuestas
-from messaging import publish
 
-# Configuración RabbitMQ
-rabbit_host = '10.128.0.20'
-rabbit_user = 'isis2503'
-rabbit_password = '1234'
+# Configuración de conexión
+RABBIT_HOST = '10.128.0.20'
+RABBIT_USER = 'isis2503'
+RABBIT_PASSWORD = '1234'
 
-# Conexión
+# Establecer conexión con RabbitMQ
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(
-        host=rabbit_host,
-        credentials=pika.PlainCredentials(rabbit_user, rabbit_password)
+        host=RABBIT_HOST,
+        credentials=pika.PlainCredentials(RABBIT_USER, RABBIT_PASSWORD)
     )
 )
 channel = connection.channel()
-
 channel.queue_declare(queue='reduce_queue', durable=True)
 
-buffer = []
-
+# Función que se ejecuta por cada mensaje recibido
 def callback(ch, method, properties, body):
-    try:
-        data = json.loads(body)
-        print("Mensaje recibido:", data)
-        buffer.append(data)
+    mensaje = json.loads(body)
+    reducir_respuestas(mensaje)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
 
-        if len(buffer) >= 5:
-            print("Ejecutando reducción...")
-            resultados = reducir_respuestas(buffer)
-            for res in resultados:
-                print(json.dumps(res, indent=4))
-                publish(res, queue='final_output')  # o la cola que prefieras
-            buffer.clear()
-
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-    except Exception as e:
-        print("Error procesando mensaje:", e)
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-
+# Escuchar la cola
 channel.basic_consume(queue='reduce_queue', on_message_callback=callback)
+print("Esperando fragmentos desde RabbitMQ...")
+channel.start_consuming()
+
+
